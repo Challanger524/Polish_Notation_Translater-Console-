@@ -1,55 +1,52 @@
 #include "Header.h"
+#include <string>
 
 #define TEST
-#ifdef TEST 
-#include <string>
-#endif
-void(*Terminal)(const char *, char *&, char *&) = Terminal_Single_Thread;
+//#undef TEST //Uncomment for premade input
 
+void(*Terminal)(const char *, unique_ptr<char[]> &, unique_ptr<char[]> &) = Terminal_Single_Thread;
 
 int main()
 {
-	char input[SIZER];
-	char *res1 = nullptr;
-	char *res2 = nullptr;
-	size_t str_size;
-
 	if (thread::hardware_concurrency() > 1u)Terminal = Terminal_Double_Thread;//slower with threads
 
 #ifdef TEST
-#if 1
+#if 0
 	vector<string> Test_input =
-	{"12+3", "(a+b!!)*12!!!", "((a!!+b)!*15)^2!", "(((a!!+b)!*15)^2!)!", "(a+b)*!12",
-	 "+ab", "!!!+!!a!b", "!*!+!a!b!c", "!^!/*!+a!bc!d!e", "!^!*!c+!a!b/!-1!2 3",
-	 "ab+!", "abc-+", "ab+c-", "ab+c*3 1 2-/^", "a!b!+!c!*!3!1!2!-!/!^!", "abc+",
-	 "a+b!!!", "a!b!!c!-+!!!", "(a+b)!*2*(c+d)!!"};
+	{"12!+a", "(a+b!!)*12!", "((a!+b)!*15)^2!", "(((a!!+b)!*15)^2!)!",//infix
+	 "+a12!", "!*!+!a!1 23", "!^!/*!+a!b1!23!4", "!^!*!c+!a!b/!-12!345 6",//prefix
+	 "ab+!", "abc-+", "ab+c-", "ab+c*3 1 2-/^", "a!b!+!c!*!3!1!2!-!/!^!", "abc+",//postfix
+	 "a+b!!!", "a!b!!c!-+!!!", "(a+b)!*2*(c+d)!!"};//wrong
 #else
-	vector<string> Test_input = {"12+3"};
+	vector<string> Test_input = {"!+!!!12!!34"};
 #endif
 
 	for (const auto &str : Test_input) {
+		unique_ptr<char[]> res1(nullptr);
+		unique_ptr<char[]> res2(nullptr);
+
 		Terminal(str.c_str(), res1, res2);
 		cout << endl;
-		if (res1) delete[] res1;
-		if (res2) delete[] res2;
 	}
 #else
+
+	char input[G_SIZER];
+	size_t str_siz;
 
 	cout << "Allowed: latters(A-z), digits(0-9), operators(+ - * / ^ % !); 123 456(spacebar).";
 	while (true) {
 		cout << "\n Write your expression:";
-
+		unique_ptr<char[]> res1(nullptr);
+		unique_ptr<char[]> res2(nullptr);
 
 		fflush(stdin);
-		fgets(input, SIZER, stdin);
+		fgets(input, G_SIZER, stdin);
 
-		str_size = strlen(input);
-		if (str_size < 3) break;
-		if (input[str_size - 1] == '\n') input[--str_size] = '\0';
+		str_siz = strlen(input);
+		if (str_siz < 3) break;
+		if (input[str_siz - 1] == '\n') input[--str_siz] = '\0';
+
 		Terminal(input, res1, res2);
-
-		if (res1) delete[] res1;
-		if (res2) delete[] res2;
 	}
 #endif
 
