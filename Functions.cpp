@@ -17,7 +17,7 @@ void Terminal_Single_Thread(const char *input, unique_ptr<char[]> &res1, unique_
 	bool correct = false;
 	size_t str_size = strlen(input);
 
-	if (str_size < 3) return;
+	if (str_size < 1) return;
 
 	cout << "Input :[" << input << ']';
 
@@ -67,7 +67,7 @@ void Terminal_Double_Thread(const char *input, unique_ptr<char[]> &res1, unique_
 	bool correct = false;
 	size_t str_size = strlen(input);
 
-	if (str_size < 3) return;
+	if (str_size < 1) return;
 
 	cout << "Input :[" << input << ']';
 
@@ -118,76 +118,78 @@ void Terminal_Double_Thread(const char *input, unique_ptr<char[]> &res1, unique_
 //Verifying the correctness of expression
 bool InfixSyntaxCheker(const char *_string, const size_t _str_size)
 {
-	bool OperatorExpected = false;
-	int Operators = 0;
-	int Operands = 0;
-	int RoundBrackets = 0;
+	bool expect_operator = false;
+	int operators = 0;
+	int operands = 0;
+	int brackets = 0;
 
 	for (size_t i = 0; i < _str_size; i++) {
 		if (_string[i] == ' ') continue;
-		else if (OperChecker(_string[i]) > 0 && OperatorExpected == true) {
-			OperatorExpected = false;
-			Operators++;
+		else if (OperChecker(_string[i]) > 0 && expect_operator == true) {
+			expect_operator = false;
+			operators++;
 		}
-		else if (isalnum(_string[i]) && OperatorExpected == false) {
-			OperatorExpected = true;
-			Operands++;
+		else if (isalnum(_string[i]) && expect_operator == false) {
+			expect_operator = true;
+			operands++;
 
 			if (isdigit(_string[i])) {
 				while (++i < _str_size && isdigit(_string[i]));
 				i--;
 			}
 		}
-		else if (_string[i] == '(') RoundBrackets++;
-		else if (_string[i] == ')' && OperatorExpected == true) RoundBrackets--;
-		else if (OperChecker(_string[i]) < 0 && OperatorExpected == true) continue;
+		else if (_string[i] == '(') brackets++;
+		else if (_string[i] == ')' && expect_operator == true) brackets--;
+		else if (OperChecker(_string[i]) < 0 && expect_operator == true) continue;
 
 		else return false;
 	}
 
-	if (Operands < 2) return false;
-	if (Operands != Operators + 1) return false;
-	if (RoundBrackets != 0) return false;
+	if (operands < 2) return false;
+	if (operands != operators + 1) return false;
+	if (brackets != 0) return false;
 
 	return true;
 }
 bool PostfSyntaxCheker(const char *_string, const size_t _str_size)
 {
-	int Operators = 0;
-	int Operands = 0;
+	int operators = 0;
+	int operands = 0;
 
 	for (size_t i = 0; i < _str_size; i++) {
 		if (_string[i] == ' ') continue;
-		else if (OperChecker(_string[i]) > 0) Operators++;
+		else if (OperChecker(_string[i]) > 0) operators++;
 		else if (isalnum(_string[i])) {
-			Operands++;
+			operands++;
 			if (isdigit(_string[i])) {
 				while (++i < _str_size && isdigit(_string[i]));
 				i--;
 			}
 		}
+		else if (OperChecker(_string[i]) < 0) continue;
 		else return false;
-		if (Operands == Operators) return false;
+
+		if (operands == operators) return false;
 	}
 
-	if (Operands < 2) return false;
-	if (Operators != Operands - 1) return false;
+	if (operands < 2) return false;
+	if (operators != operands - 1) return false;
 
 	return true;
 }
 bool PrefiSyntaxCheker(const char *_string, const size_t _str_size)
 {
-	bool Stop = false;
-	int Operators = 0;
-	int Operands = 0;
+	bool stop = false;
+	int operators = 0;
+	int operands = 0;
 
 	for (size_t i = 0; i < _str_size; i++)
 	{
 		if (_string[i] == ' ') continue;
-		else if (OperChecker(_string[i]) > 0) Operators++;
+		else if (OperChecker(_string[i]) > 0) operators++;
 		else if (isalnum(_string[i]))
 		{
-			Operands++;
+			operands++;
 			if (isdigit(_string[i])) {
 				while (i < _str_size && isdigit(_string[i]))i++;
 				i--;
@@ -196,17 +198,18 @@ bool PrefiSyntaxCheker(const char *_string, const size_t _str_size)
 		else if (OperChecker(_string[i]) < 0) continue;
 		else return false;
 
-		if (Operators + 1 - Operands == 0) Stop = true;
-		else if (Stop == true) return false;
+		if (operators + 1 - operands == 0) stop = true;
+		else if (stop == true) return false;
 	}
 
-	if (Operands < 2) return false;
-	if (Operators != Operands - 1) return false;
+	if (operands < 2) return false;
+	if (operators != operands - 1) return false;
 
 	return true;
 }
 
-//Translators(standart algorythms from the internet):
+//Translators(standart algorythms from the internet).
+//Before the actual translating, the maximum possible size of result is being counting!
 void InfToPost(const char *_string, unique_ptr<char[]> &ptr, const size_t _str_size)
 {
 	stack<char> OperStack;
