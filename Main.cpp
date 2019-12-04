@@ -4,7 +4,7 @@
 #define TEST
 //#undef TEST //Uncomment for console  input
 
-void(*Terminal)(const char *, unique_ptr<char[]> &, unique_ptr<char[]> &) = Terminal_Single_Thread;
+void(*Terminal)(string_view, unique_ptr<char[]> &, unique_ptr<char[]> &) = Terminal_Single_Thread;
 
 int main()
 {
@@ -15,17 +15,20 @@ int main()
 	vector<string> Test_input =
 	{"12!+a", "(a+b!!)*12!", "((a!+b)!*15)^2!", "(((a!!+b)!*15)^2!)!",     //infix
 	 "+a12!", "!*!+!a!1 23", "!^!/*!+a!b1!23!4", "!^!*!c+!a!b/!-12!345 6",//prefix
-	 "a12+!", "a!1 23-+", "ab+c*3 1 2-/^", "a!b!+!c!*!1!23!456!-!/!^!",  //postfix
+	 "a12+!", "a!1 23-+", "a!b+c*3!1 2-!/^", "a!b!+!c!*!1!23!456!-!/!^!",//postfix
 	 "123!+", "-+a", "((a+b)-2", "!(a+1)"};//wrong
 #else
-	vector<string> Test_input = {"!+!!!12!!34"};
+	vector<string> Test_input = {"!*!+!a!1 23"};
 #endif
 
-	for (const auto &str : Test_input) {
+	for (const auto &str : Test_input) 
+	{
 		unique_ptr<char[]> res1(nullptr);
 		unique_ptr<char[]> res2(nullptr);
 
-		Terminal(str.c_str(), res1, res2);
+		Terminal(str, res1, res2);
+
+		//if (res1 && res2) if (!(Check(res1) && Check(res2))) cout << "Wrong translation\n";
 		cout << endl;
 	}
 #else
