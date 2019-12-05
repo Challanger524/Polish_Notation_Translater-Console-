@@ -404,7 +404,7 @@ void InfToPref(string_view _string, unique_ptr<char[]> &ptr)
 		return;
 	}
 
-	InfToPost(_string, ptr);//InfToPost call
+	InfToPost(copy_str, ptr);//InfToPost call
 
 	pos = strlen(ptr.get()) - 1;
 	for (size_t i = 0; pos > i; pos--, i++) swap(ptr[i], ptr[pos]);//postfix string reverse
