@@ -2,16 +2,16 @@
 #include <string>
 
 #define TEST
-//#undef TEST //Uncomment for console  input
+#undef TEST //Comment for partitial test
 
-void(*Terminal)(string_view, unique_ptr<char[]> &, unique_ptr<char[]> &) = Terminal_Single_Thread;
+function<void(string_view, unique_ptr<char[]> &, unique_ptr<char[]> &)> Terminal;
 
 int main()
 {
 	if (thread::hardware_concurrency() > 1u)Terminal = Terminal_Double_Thread;//slower with threads
+	else Terminal = Terminal_Single_Thread;
 
-#ifdef TEST
-#if 1
+#ifndef TEST
 	vector<string> Test_input =
 	{"12!+a", "(a+b!!)*12!", "((a!+b)!*15)^2!", "(((a!!+b)!*15)^2!)!",     //infix
 	 "+a12!", "!*!+!a!1 23", "!^!/*!+a!b1!23!4", "!^!*!c+!a!b/!-12!345 6",//prefix
@@ -20,7 +20,7 @@ int main()
 #else
 	vector<string> Test_input = {"!*!+!a!1 23"};
 #endif
-
+	cout << "------------------------------ test examples -----------------------------------";
 	for (const auto &str : Test_input) 
 	{
 		unique_ptr<char[]> res1(nullptr);
@@ -31,7 +31,7 @@ int main()
 		//if (res1 && res2) if (!(Check(res1) && Check(res2))) cout << "Wrong translation\n";
 		cout << endl;
 	}
-#else
+	cout << "-------------------------- test examples end -----------------------------------\n";
 
 	char input[G_SIZER];
 	size_t str_siz;
@@ -52,7 +52,6 @@ int main()
 		Terminal(input, res1, res2);
 	}
 	cout << " No input, program terminates: ";
-#endif
 	
 	system("pause");
 	return 0;
