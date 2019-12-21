@@ -74,9 +74,9 @@ void Terminal_Double_Thread(string_view input, unique_ptr<char[]> &res1, unique_
 		cout << " - Prefix";
 		correct = PrefiSyntaxCheker(input);
 		if (correct) {
-			thread T(PrefToInf, ref(input), ref(res1));
+			auto handle = async(launch::async | launch::deferred, PrefToInf, ref(input), ref(res1));
 			PrefToPost(input, res2);
-			if (T.joinable())T.join();
+			handle.wait();
 			cout << "\nOutput:[" << res1 << "] - Infix";
 			cout << "\nOutput:[" << res2 << "] - Postfix";
 		}
@@ -89,9 +89,9 @@ void Terminal_Double_Thread(string_view input, unique_ptr<char[]> &res1, unique_
 			cout << " - Postfix";
 			correct = PostfSyntaxCheker(input);
 			if (correct) {
-				thread T(PostToPref, ref(input), ref(res1));
+				auto handle = async(launch::async | launch::deferred, PostToPref, ref(input), ref(res1));
 				PostToInf(input, res2);
-				if (T.joinable())T.join();
+				handle.wait();
 				cout << "\nOutput:[" << res1 << "] - Prefix";
 				cout << "\nOutput:[" << res2 << "] - Infix";
 			}
@@ -100,14 +100,14 @@ void Terminal_Double_Thread(string_view input, unique_ptr<char[]> &res1, unique_
 			cout << " - Infix";
 			correct = InfixSyntaxCheker(input);
 			if (correct) {
-				thread T(InfToPref, ref(input), ref(res1));
+				auto handle = async(launch::async | launch::deferred, InfToPref, ref(input), ref(res1));
 				InfToPost(input, res2);
-				if (T.joinable())T.join();
+				handle.wait();
 				cout << "\nOutput:[" << res1 << "] - Prefix";
 				cout << "\nOutput:[" << res2 << "] - Postfix";
 			}
 		}
-		else cout << "Wrong expression detected.";//if wtf
+		else cout << "Wrong expression detected.";
 	}
 
 	if (!correct) { cout << " wrong expression."; }

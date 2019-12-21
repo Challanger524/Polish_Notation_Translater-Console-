@@ -7,7 +7,10 @@
 function<void(string_view, unique_ptr<char[]> &, unique_ptr<char[]> &)> Terminal;
 
 int main()
-{
+{	
+	char input[G_SIZER];
+	size_t str_siz;
+
 	if (thread::hardware_concurrency() > 1u)Terminal = Terminal_Double_Thread;//slower with threads
 	else Terminal = Terminal_Single_Thread;
 
@@ -28,13 +31,12 @@ int main()
 
 		Terminal(str, res1, res2);
 
+		//if (!res1 && !res2) cout << "Wrong input\n";
 		//if (res1 && res2) if (!(Check(res1) && Check(res2))) cout << "Wrong translation\n";
 		cout << endl;
 	}
 	cout << "-------------------------- test examples end -----------------------------------\n";
 
-	char input[G_SIZER];
-	size_t str_siz;
 
 	cout << "Allowed: latters(A-z), digits(0-9), operators(+ - * / ^ % !); 123 456(spacebar).";
 	while (true) {
