@@ -9,23 +9,28 @@ function<void(string_view, unique_ptr<char[]> &, unique_ptr<char[]> &)> Terminal
 
 int main()
 {	
+	Timer t;
 	char input[G_SIZER];
 	size_t str_siz;
-	const regex rule(R"([^\s\(\)A-Za-z1-9\d*+\-\*/\^%!])");//if specific (not defined).
+	const regex rule(R"([^\s\(\)A-Za-z1-9\d*+\-\*/\^%!])");//if specific (not defined) character detected('^' in front == not).
 	cmatch odd;
 
 	if (thread::hardware_concurrency() > 1u)Terminal = Terminal_Double_Thread;//slower with threads
 	else Terminal = Terminal_Single_Thread;
+	cout.precision(4);
 
 #ifndef TEST
+
 	vector<string> Test_input =
-	{"12!+a", "(a+b!!)*12!", "((a!+b)!*15)^2!", "(((a!!+b)!*15)^2!)!",     //infix
-	 "+a12!", "!*!+!a!1 23", "!^!/*!+a!b1!23!4", "!^!*!c+!a!b/!-12!345 6",//prefix
-	 "a12+!", "a!1 23-+", "a!b+c*3!1 2-!/^", "a!b!+!c!*!1!23!456!-!/!^!",//postfix
-	 "123!+", "-+a", "((a+b)-2", "!&(a+1)"};                            //wrong
+	{" 12 ! + a ", "(a+b!!)*12!", "((a!+b)!*15)^2!", "(((a!!+b)!*15)^2!)!",      //infix
+	 " ! +! a! 12", "!*!+!a!1 23", "!^!/*!+a!b1!23!4", "!^!*!c+!a!b/!-12!345 6",//prefix
+	 " a !12 !+ !", "a!1 23-+", "a!b+c*3!1 2-!/^", "a!b!+!c!*!1!23!456!-!/!^!",//postfix
+	 "123!+", "-+a", "((a+b)-2", "!&(a+1)", "?#&$"};                          //wrong
 #else //partitial test
-	vector<string> Test_input = {"!*!+!a!1 23"};
+
+	vector<string> Test_input = {" !+! a! 12"/*, "!*!+!a!1 23"*/};
 #endif
+
 	cout << "------------------------------ test examples -----------------------------------";
 	for (const auto &str : Test_input)
 	{
@@ -38,7 +43,10 @@ int main()
 		Terminal(str, res1, res2);
 
 		//if (!res1 && !res2) cout << "Wrong input\n";
-		//if (res1 && res2) if (!(Check(res1) && Check(res2))) cout << "Wrong translation\n";
+		if (res1 && res2) if (!(Check(res1) && Check(res2))) {
+			cout << "Wrong translation\n"; 
+			system("pause");
+		}
 		cout << endl;
 	}
 	cout << "-------------------------- test examples end -----------------------------------\n";
@@ -61,7 +69,9 @@ int main()
 
 		Terminal(input, res1, res2);//execute
 	}
-	cout << " No input, program close: ";
+
+	cout.precision(1);
+	cout << " No input, program closes (operating time: " << static_cast<std::chrono::duration<float>>(t.get()).count() << "sec).\n";
 	
 	system("pause");
 	return 0;

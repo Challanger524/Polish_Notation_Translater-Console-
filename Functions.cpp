@@ -1,4 +1,5 @@
 #include "Header.h"
+#include <assert.h>
 
 //"Get operator's priority"
 int OperChecker(const char c)
@@ -6,22 +7,25 @@ int OperChecker(const char c)
 	if (c == '+' || c == '-') return 1;
 	else if (c == '*' || c == '/' || c == '%') return 2;
 	else if (c == '^') return 3;
-	else if (c == '!') return-1; //for unar operators
-	else				    return 0;
+	else if (c == '!') return-1;//for unar operators
+	else return 0;
 }
 
 //Processing the input:
 void Terminal_Single_Thread(string_view input, unique_ptr<char[]> &res1, unique_ptr<char[]> &res2)
 {
 	Timer t;
+	size_t pos = 0;
 	bool correct = false;
 
 	if (input.size() < 3) return;
 
 	cout << "Input :[" << input << ']';
 
+	if (input[pos] == ' ') while (++pos < input.size() && input[pos] == ' ');
+
 	//Define weather expression is Prefix or Postdix or Infix.
-	if (OperChecker(input[0])) {//if Prefix
+	if (OperChecker(input[pos])) {//if Prefix
 		cout << " - Prefix";
 		correct = PrefiSyntaxCheker(input);
 		if (correct) {
@@ -32,7 +36,7 @@ void Terminal_Single_Thread(string_view input, unique_ptr<char[]> &res1, unique_
 		}
 	}
 	else {
-		size_t pos = input.size() - 1;
+		pos = input.size() - 1;
 		if (input[pos] == ' ' || OperChecker(input[pos]) < 0) while (--pos != 0 && (input[pos] == ' ' || OperChecker(input[pos]) < 0));//if unar operators at the end
 
 		if (OperChecker(input[pos]) > 0) {//if Postfix
@@ -63,14 +67,17 @@ void Terminal_Single_Thread(string_view input, unique_ptr<char[]> &res1, unique_
 void Terminal_Double_Thread(string_view input, unique_ptr<char[]> &res1, unique_ptr<char[]> &res2)
 {//works slower because of threading !
 	Timer t;
+	size_t pos = 0;
 	bool correct = false;
 
 	if (input.size() < 3) return;
 
 	cout << "Input :[" << input << ']';
 
+	if (input[pos] == ' ') while (++pos < input.size() && input[pos] == ' ');
+
 	//Define weather expression is Prefix or Postdix or Infix.
-	if (OperChecker(input[0])) {//if Prefix
+	if (OperChecker(input[pos])) {//if Prefix
 		cout << " - Prefix";
 		correct = PrefiSyntaxCheker(input);
 		if (correct) {
@@ -82,7 +89,7 @@ void Terminal_Double_Thread(string_view input, unique_ptr<char[]> &res1, unique_
 		}
 	}
 	else {
-		size_t pos = input.size() - 1;
+		pos = input.size() - 1;
 		if (input[pos] == ' ' || OperChecker(input[pos]) < 0) while (--pos != 0 && (input[pos] == ' ' || OperChecker(input[pos]) < 0));//if unar operators at the end
 
 		if (OperChecker(input[pos]) > 0) {//if Postfix
@@ -202,6 +209,7 @@ bool PrefiSyntaxCheker(string_view view)
 
 	if (operands < 2) return false;
 	if (operators != operands - 1) return false;
+	if (OperChecker(view[view.size() - 1])) return false;
 
 	return true;
 }
@@ -213,19 +221,14 @@ void InfToPost(string_view _string, unique_ptr<char[]> &ptr)
 {
 	stack<char> OperStack;
 	size_t pos = 0;//iterator
-	int new_size = 0;
+	long long new_size = 0;
 	int priority = -1;
 
-	for (size_t i = 0; i < _string.size(); i++) { //counting amount of -odd places from '(', ')' and needed for ' ' between numbers		
-		if (isdigit(_string[i])) {
-			new_size++;
-			while (isdigit(_string[++i]));
-			i--;
-		}
-		else if (_string[i] == '(' || _string[i] == ')') new_size--;
-	}
+	//counting amount of -odd places from '(', ')' and needed for ' ' between numbers
+	new_size = count_num(_string.begin(), _string.end()); 	
+	new_size -= 2 * count(_string.begin(), _string.end(), '(');	
 
-	ptr = make_unique<char[]>(_string.size() + new_size + 1);
+	ptr = make_unique<char[]>(new_size + _string.size() + 1);
 
 	for (size_t i = 0; i < _string.size(); i++)//Infix to Postfix converter
 	{
@@ -348,6 +351,7 @@ void InfToPref(string_view _string, unique_ptr<char[]> &ptr)
 
 				Lambda(copy, l_begin, l_end, Lambda);
 			}
+			else if (copy[it] == ' ') end--;
 			else terminate();
 		}
 	};//InnerReverse(Lambda) end//
@@ -414,22 +418,20 @@ void InfToPref(string_view _string, unique_ptr<char[]> &ptr)
 void PostToInf(string_view _string, unique_ptr<char[]> &ptr)
 {
 	int priority;//for operator priority
-	size_t oper_num = 0;
-	size_t unar_num = 0;
+	size_t new_size;
+	size_t oper_num;
+	size_t binar_num;
 	size_t
 		up = 0,//stack level iterators
 		low = 0,
 		j = 1,//iterators
 		k = 1;
-	size_t new_size;
-
-	for (size_t i = 0; i < _string.size(); i++) {
-		if (OperChecker(_string[i]) > 0) oper_num++;//counting number of binary operators
-		else if (OperChecker(_string[i]) < 0) unar_num++;//counting number of unary operators
-	}
-
+	
+	oper_num = count_if(_string.begin(), _string.end(), OperChecker);
+	binar_num = count_if(_string.begin(), _string.end(), [] (char c) {return OperChecker(c) > 0; });
 	oper_num++;
-	new_size = _string.size() + (oper_num + unar_num) * 2;// the maximum possible amount of chars in result 
+
+	new_size = _string.size() + oper_num * 2;// the maximum possible amount of chars in result
 
 	vector<vector<char>> mas(oper_num, vector<char>(new_size));//matrix as a stack
 	ptr = make_unique<char[]>(new_size);
@@ -441,8 +443,12 @@ void PostToInf(string_view _string, unique_ptr<char[]> &ptr)
 			j = 2;
 			mas[up][0] = '0';//'0' is right
 			mas[up][1] = _string[pos];
+			if (pos + 1 < _string.size() && _string[pos + 1] == ' ') {
+				while (++pos < _string.size() && _string[pos] == ' ');
+				pos--;
+			}
 			if (pos + 1 < _string.size() && OperChecker(_string[pos + 1]) < 0) {
-				while (pos + 1 < _string.size() && OperChecker(_string[++pos]) < 0) mas[up][j++] = _string[pos];
+				while (++pos < _string.size() && OperChecker(_string[pos]) < 0) mas[up][j++] = _string[pos];
 				pos--;
 			}
 			mas[up][j] = '\0';
@@ -453,9 +459,16 @@ void PostToInf(string_view _string, unique_ptr<char[]> &ptr)
 			j = 1;
 			mas[up][0] = '0';//'0' is right
 			while (isdigit(_string[pos])) mas[up][j++] = _string[pos++];
-			if (pos + 1 < _string.size() && OperChecker(_string[pos]) < 0) while (pos + 1 < _string.size() && OperChecker(_string[pos]) < 0) mas[up][j++] = _string[pos++];
-			mas[up][j] = '\0';
 			pos--;
+			if (pos + 1 < _string.size() && _string[pos + 1] == ' ') {
+				while (++pos < _string.size() && _string[pos] == ' ');
+				pos--;
+			}
+			if (pos + 1 < _string.size() && OperChecker(_string[pos + 1]) < 0) {
+				while (++pos < _string.size() && OperChecker(_string[pos]) < 0) mas[up][j++] = _string[pos];
+				pos--;
+			}
+			mas[up][j] = '\0';
 			up++;
 		}
 		else if (OperChecker(_string[pos]) < 0) {//if we meet an unar operator
@@ -466,15 +479,18 @@ void PostToInf(string_view _string, unique_ptr<char[]> &ptr)
 		}
 		else if (OperChecker(_string[pos]) > 0)//if we meet a binary operator
 		{//we make one string out of two with operator in between
+			size_t n_pos = pos + 1;
 			up--;
 			low = up - 1;
 			j = 1;
 			k = 1;
 
 			ptr[0] = mas[low][0];
-			if (pos + 1 < _string.size() && OperChecker(_string[pos + 1]) < 0) ptr[j++] = '(';
-			while (mas[low][k] != '\0') 
-				ptr[j++] = mas[low][k++];//copy from stack to buff
+
+			if (n_pos < _string.size() && _string[n_pos] == ' ') while (++n_pos < _string.size() && _string[n_pos] == ' ');
+			if (n_pos < _string.size() && OperChecker(_string[n_pos]) < 0) ptr[j++] = '(';
+
+			while (mas[low][k] != '\0') ptr[j++] = mas[low][k++];//copy from stack to buff
 			ptr[j] = '\0';
 
 			priority = OperChecker(_string[pos]);
@@ -507,7 +523,8 @@ void PostToInf(string_view _string, unique_ptr<char[]> &ptr)
 				}
 			}
 
-			if (pos + 1 < _string.size() && OperChecker(_string[pos + 1]) < 0) {
+			if (n_pos < _string.size() && OperChecker(_string[n_pos]) < 0) {
+				pos = n_pos - 1;
 				mas[low][0] = '0';
 				mas[low][j++] = ')';
 				while (pos + 1 < _string.size() && OperChecker(_string[++pos]) < 0) mas[low][j++] = _string[pos];
@@ -525,18 +542,13 @@ void PostToPref(string_view _string, unique_ptr<char[]> &ptr)
 {
 	stack<char> OperStack;
 	stack<int> PairCondition;
-	size_t space_count = 0;//' '//
-	size_t num_count = 0;
-	size_t j = 0;//iterator
+	size_t space_count;//' '//
+	size_t num_count;
+	size_t j;//iterator
 
-	for (size_t i = 0; i < _string.size(); i++) {
-		if (_string[i] == ' ') space_count++;
-		else if (isdigit(_string[i])) {
-			while (isdigit(_string[++i]));
-			num_count++;
-			i--;
-		}
-	}
+	space_count = count(_string.begin(), _string.end(), ' ');
+	num_count = count_num(_string.begin(), _string.end());
+
 	j = _string.size() + num_count - space_count + 1;
 
 	ptr = make_unique<char[]>(j);
@@ -626,23 +638,21 @@ void PostToPref(string_view _string, unique_ptr<char[]> &ptr)
 
 void PrefToInf(string_view _string, unique_ptr<char[]> &ptr)
 {
-	size_t oper_num = 0;
-	size_t unar_num = 0;
+	int priority;//for operator priority
+	size_t new_size;
+	size_t oper_num;
+	size_t binar_num;
 	size_t
 		up = 0,//stack level iterators
 		low = 0,
 		j = 1,//iterators
 		k = 1;
-	size_t new_size;
-	int priority;//for operator priority
-
-	for (size_t i = 0; i < _string.size(); i++) {
-		if (OperChecker(_string[i]) > 0) oper_num++;//counting number of binary operators
-		else if (OperChecker(_string[i]) < 0) unar_num++;//counting number of unary operators
-	}
-
+	
+	oper_num = count_if(_string.begin(), _string.end(), OperChecker);
+	binar_num = count_if(_string.begin(), _string.end(), [] (char c) {return OperChecker(c) > 0; });
 	oper_num++;
-	new_size = _string.size() + (oper_num + unar_num) * 2;// the maximum possible amount of chars in result 
+
+	new_size = _string.size() + oper_num * 2;// the maximum possible amount of chars in result 
 
 	vector<vector<char>> mas(oper_num, vector<char>(new_size));//matrix as a stack
 	ptr = make_unique<char[]>(new_size);
@@ -655,8 +665,13 @@ void PrefToInf(string_view _string, unique_ptr<char[]> &ptr)
 			j = 2;
 			mas[up][0] = '0';//'0' is right
 			mas[up][1] = _string[pos];
+
+			if (pos - 1 < _string.size() && _string[pos - 1] == ' ') {
+				while (--pos < _string.size() && _string[pos] == ' ');
+				pos++;
+			}
 			if (pos - 1 < _string.size() && OperChecker(_string[pos - 1]) < 0) {
-				while (pos - 1 < _string.size() && OperChecker(_string[--pos]) < 0) mas[up][j++] = _string[pos];
+				while (--pos < _string.size() && OperChecker(_string[pos]) < 0) mas[up][j++] = _string[pos];
 				pos++;
 			}
 			mas[up][j] = '\0';
@@ -673,11 +688,19 @@ void PrefToInf(string_view _string, unique_ptr<char[]> &ptr)
 						
 			while (it < pos)  mas[up][j_it--] = _string[pos--];
 
-			if (pos < _string.size() && OperChecker(_string[pos]) < 0) while (pos < _string.size() && OperChecker(_string[pos]) < 0) mas[up][j++] = _string[pos--];
+			pos++;
+
+			if (pos - 1 < _string.size() && _string[pos - 1] == ' ') {
+				while (--pos < _string.size() && _string[pos] == ' ');
+				pos++;
+			}
+			if (pos - 1 < _string.size() && OperChecker(_string[pos - 1]) < 0) {
+				while (--pos < _string.size() && OperChecker(_string[pos]) < 0) mas[up][j++] = _string[pos];
+				pos++;
+			}
 
 			mas[up][0] = '0';//'0' is right
 			mas[up][j] = '\0';
-			pos++;
 			up++;
 		}
 		else if (OperChecker(_string[pos]) < 0) {//if we meet an unar operator
@@ -688,6 +711,7 @@ void PrefToInf(string_view _string, unique_ptr<char[]> &ptr)
 		}
 		else if (OperChecker(_string[pos]) > 0)//if we meet a binary operator
 		{//we make one string out of two with operator in between
+			size_t n_pos = pos - 1;
 			up--;
 			low = up - 1;
 			j = 1;
@@ -703,7 +727,8 @@ void PrefToInf(string_view _string, unique_ptr<char[]> &ptr)
 			ptr[k] = '\0';
 			k = 1;
 
-			if (pos - 1 < _string.size() && OperChecker(_string[pos - 1]) < 0) mas[low][j++] = '(';
+			if (n_pos < _string.size() && _string[n_pos] == ' ') while (--n_pos < _string.size() && _string[n_pos] == ' ');
+			if (n_pos < _string.size() && OperChecker(_string[n_pos]) < 0) mas[low][j++] = '(';
 
 			if ((mas[up][0] != '0') && (priority > mas[up][0] - 48)) {//if upper operands have lower priority
 				mas[low][j++] = '(';
@@ -727,7 +752,8 @@ void PrefToInf(string_view _string, unique_ptr<char[]> &ptr)
 				while (ptr[k] != '\0') mas[low][j++] = ptr[k++]; //without brackets
 			}
 
-			if (pos - 1 < _string.size() && OperChecker(_string[pos - 1]) < 0) {
+			if (n_pos < _string.size() && OperChecker(_string[n_pos]) < 0) {
+				pos = n_pos + 1;
 				mas[low][0] = '0';
 				mas[low][j++] = ')';
 				while (pos - 1 < _string.size() && OperChecker(_string[--pos]) < 0) mas[low][j++] = _string[pos];
@@ -745,18 +771,12 @@ void PrefToPost(string_view _string, unique_ptr<char[]> &ptr)
 {
 	stack<char> OperStack;
 	stack<int> PairCondition;
-	size_t space_count = 0;//' '//
-	size_t num_count = 0;
+	size_t space_count;//' '//
+	size_t num_count;
 	size_t j = 0;//iterator
 
-	for (size_t i = 0; i < _string.size(); i++) {
-		if (_string[i] == ' ') space_count++;
-		else if (isdigit(_string[i])) {
-			while (++i < _string.size() && isdigit(_string[i]));
-			num_count++;
-			i--;
-		}
-	}
+	space_count = count(_string.begin(), _string.end(), ' ');
+	num_count = count_num(_string.begin(), _string.end());
 
 	ptr = make_unique<char[]>(_string.size() + num_count - space_count + 1);
 
@@ -1108,4 +1128,18 @@ bool Check(unique_ptr<char[]> &res) {
 	if (PostfSyntaxCheker(res.get())) return true;
 	if (PrefiSyntaxCheker(res.get())) return true;
 	return false;
+}
+
+[[nodiscard]] int count_num(string_view::const_iterator First, string_view::const_iterator Last) {
+	assert(First <= Last && "iterator First no bigger than Last");
+	unsigned int nums = 0;
+	for (string_view::const_iterator It = First; It != Last; ) {
+		if (isdigit(*It)) {
+			nums++;
+			while (++It != Last && isdigit(*(It)));
+			continue;
+		}
+		It++;
+	}
+	return nums;
 }
