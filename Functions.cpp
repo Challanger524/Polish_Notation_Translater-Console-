@@ -18,12 +18,13 @@ void Terminal_Single_Thread(string_view input, unique_ptr<char[]> &res1, unique_
 	size_t pos = 0;
 	bool correct = false;
 
-	if (input.size() < 3) return;
-
 	cout << "Input :[" << input << ']';
 
 	if (input[pos] == ' ') while (++pos < input.size() && input[pos] == ' ');
-
+	if (input.size() < 3 || pos >= input.size()) {
+		cout << " - Wrong input!";
+		return;
+	}
 	//Define weather expression is Prefix or Postdix or Infix.
 	if (OperChecker(input[pos])) {//if Prefix
 		cout << " - Prefix";
@@ -70,11 +71,13 @@ void Terminal_Double_Thread(string_view input, unique_ptr<char[]> &res1, unique_
 	size_t pos = 0;
 	bool correct = false;
 
-	if (input.size() < 3) return;
-
 	cout << "Input :[" << input << ']';
 
 	if (input[pos] == ' ') while (++pos < input.size() && input[pos] == ' ');
+	if (input.size() < 3 || pos >= input.size()) {
+		cout << " - Wrong input!";
+		return;
+	}
 
 	//Define weather expression is Prefix or Postdix or Infix.
 	if (OperChecker(input[pos])) {//if Prefix

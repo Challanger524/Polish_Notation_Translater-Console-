@@ -8,7 +8,7 @@
 function<void(string_view, unique_ptr<char[]> &, unique_ptr<char[]> &)> Terminal;
 
 int main()
-{	
+{
 	Timer t;
 	char input[G_SIZER];
 	size_t str_siz;
@@ -70,7 +70,7 @@ int main()
 		Terminal(input, res1, res2);//execute
 	}
 
-	cout.precision(1);
+	cout.precision(2);
 	cout << " No input, program closes (operating time: " << static_cast<std::chrono::duration<float>>(t.get()).count() << "sec).\n";
 	
 	system("pause");
