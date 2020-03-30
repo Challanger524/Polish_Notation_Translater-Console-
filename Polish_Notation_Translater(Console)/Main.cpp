@@ -1,5 +1,5 @@
 #include "Header.h"
-#include <string>
+//#include <string>
 #include <regex>
 
 #define TEST
@@ -65,7 +65,10 @@ int main()
 
 		if (str_siz < 2) break;
 		if (input[str_siz - 1] == '\n') input[--str_siz] = '\0';
-		if (regex_search(input, odd, rule)) cout << "[Alarm]: Odd character '" << odd.str() << "' at position: " << odd.position() << " detected.\n";
+		if (regex_search(input, odd, rule)) {
+			cout << "[Alarm]: Odd character '" << odd.str() << "' at position: " << odd.position() << " detected.\n";
+			continue;
+		}
 
 		Terminal(input, res1, res2);//execute
 	}

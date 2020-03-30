@@ -238,7 +238,7 @@ void InfToPost(string_view _string, unique_ptr<char[]> &ptr)
 		if (isalnum(_string[i])) {
 			if (isdigit(_string[i])) {
 				if (pos != 0 && isdigit(ptr[pos - 1])) ptr[pos++] = ' ';//make 123' '															  
-				while (isdigit(_string[i])) ptr[pos++] = _string[i++];//make 123' '456
+				while (i < _string.size() && isdigit(_string[i])) ptr[pos++] = _string[i++];//make 123' '456
 				i--;
 			}
 			else ptr[pos++] = _string[i];
@@ -296,7 +296,7 @@ void InfToPref(string_view _string, unique_ptr<char[]> &ptr)
 			it = end;
 
 			if (OperChecker(copy[end]) < 0) {
-				while (OperChecker(copy[--it]) < 0);
+				while (--it > begin && OperChecker(copy[it]) < 0);//no point to check bounds of 'it'.
 				if (begin >= it) return;
 			}
 			else if (OperChecker(copy[end]) > 0) {
@@ -368,7 +368,7 @@ void InfToPref(string_view _string, unique_ptr<char[]> &ptr)
 	for (size_t i = 0; i < _string.size(); i++, pos--) {
 		if (OperChecker(_string[pos]) < 0) {
 			size_t unar_end = pos + 1;
-			while (OperChecker(_string[--pos]) < 0);
+			while (--pos != 0 && OperChecker(_string[pos]) < 0);
 
 			if (isalpha(_string[pos])) {
 				copy_str[i] = _string[pos];
@@ -461,7 +461,7 @@ void PostToInf(string_view _string, unique_ptr<char[]> &ptr)
 		{
 			j = 1;
 			mas[up][0] = '0';//'0' is right
-			while (isdigit(_string[pos])) mas[up][j++] = _string[pos++];
+			while (pos < _string.size() && isdigit(_string[pos])) mas[up][j++] = _string[pos++];
 			pos--;
 			if (pos + 1 < _string.size() && _string[pos + 1] == ' ') {
 				while (++pos < _string.size() && _string[pos] == ' ');
@@ -685,7 +685,7 @@ void PrefToInf(string_view _string, unique_ptr<char[]> &ptr)
 			size_t it = pos;
 			size_t j_it;
 
-			while (isdigit(_string[--it]));
+			while (--it != 0 && isdigit(_string[it]));
 			j_it = pos - it;
 			j = j_it + 1;
 						
@@ -823,7 +823,7 @@ void PrefToPost(string_view _string, unique_ptr<char[]> &ptr)
 			while (i < _string.size() && isdigit(_string[i])) ptr[j++] = _string[i++];
 
 			if (!OperStack.empty() && OperChecker(OperStack.top()) < 0) //|+!!!!|a| -> |
-				while ((OperChecker(OperStack.top()) < 0)) {
+				while (!OperStack.empty() && OperChecker(OperStack.top()) < 0) {
 					ptr[j++] = OperStack.top();
 					OperStack.pop();
 				}
