@@ -23,8 +23,8 @@ int main()
 
 	vector<string> Test_input =
 	{" 12 ! + a ", "(a+b!!)*12!", "((a!+b)!*15)^2!", "(((a!!+b)!*15)^2!)!",      //infix
-	 " ! +! a! 12", "!*!+!a!1 23", "!^!/*!+a!b1!23!4", "!^!*!c+!a!b/!-12!345 6",//prefix
-	 " a !12 !+ !", "a!1 23-+", "a!b+c*3!1 2-!/^", "a!b!+!c!*!1!23!456!-!/!^!",//postfix
+	 " ! +! a! 12", "!*!+!a!1 23", "!^!/*!+a!b1!23!4", " ! ^!*!c + !a !b /! -12!345 6",//prefix
+	 " a !12 !+ !", "a!1 23-+", "a!b+c*3!1 2-!/^", "a!b!+!c!*!1!23 456!-!/!^!",//postfix
 	 "123!+", "-+a", "((a+b)-2", "!&(a+1)", "?#&$"};                          //wrong
 #else //partitial test
 
@@ -32,19 +32,24 @@ int main()
 #endif
 
 	cout << "------------------------------ test examples -----------------------------------";
-	for (const auto &str : Test_input)
+	for (auto &str : Test_input)
 	{
 		unique_ptr<char[]> res1(nullptr);
 		unique_ptr<char[]> res2(nullptr);
 		smatch sodd;
 
-		if (regex_search(str, sodd, rule)) cout << "[Alarm]: Odd character '" << sodd.str() << "' at position: " << sodd.position() << " detected.\n";
+		if (regex_search(str, sodd, rule)) {
+			cout << "[Alarm]: Odd character '" << sodd.str() << "' at position: " << sodd.position() << " detected.\n";
+			cout << " Input : [" << str << ']' <<endl;
+			continue;
+		}
 
+		//SpaceRemover(str);
 		Terminal(str, res1, res2);
 
 		//if (!res1 && !res2) cout << "Wrong input\n";
-		if (res1 && res2) if (!(Check(res1) && Check(res2))) {
-			cout << "Wrong translation\n"; 
+		if (res1 && res2) if (!Check(res1) && !Check(res2)) {
+			cout << "Wrong translation\n";
 			system("pause");
 		}
 		cout << endl;
@@ -65,12 +70,15 @@ int main()
 
 		if (str_siz < 2) break;
 		if (input[str_siz - 1] == '\n') input[--str_siz] = '\0';
+		
+		SpaceRemover(input);
+		
 		if (regex_search(input, odd, rule)) {
 			cout << "[Alarm]: Odd character '" << odd.str() << "' at position: " << odd.position() << " detected.\n";
 			continue;
 		}
-
-		Terminal(input, res1, res2);//execute
+		
+		Terminal(input, res1, res2);
 	}
 
 	cout.precision(2);
