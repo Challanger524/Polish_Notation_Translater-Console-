@@ -1,6 +1,6 @@
 # Polish Notation Translaters (WinAPI and Console)
 
-Notation Translator - is a program, which converts mathematical expressions from given notation to two another (a+b into ab+ or +ab).
+##### Notation Translator - is a program, which converts mathematical expressions from given notation to two another (a+b into ab+ or +ab).
 Both programs are written in C++17 with Microsoft Visual Studio IDE.
 
 Program exists in two variants:
