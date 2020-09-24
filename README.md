@@ -19,24 +19,26 @@ Console(1) interface provides basic i/o operations without any special options. 
 With regex expression input is checked for presense of odd symbols.
 
 ### Step[1]  - Processing the Input:
-Implemented through calling `Terminal(input,...)` function wrapper which determining the notation type and verifying the correctness of the passed expression by calling certain `SpellChecker()`s. After it calls translation functions which converts the input from presented notation to another two (like `InfToPost()` – infix to postfix function).
+- Implemented through calling `Terminal(input,...)` function wrapper which determining the notation type
+- Verifying the correctness of the passed expression by calling certain `SpellChecker()`s. 
+- After it calls translation functions which converts the input from presented notation to another two (like `InfToPost()` – infix to postfix function).
 
 ### Step[2] – Actually the Translating:
-Presented as 6 different functions with translating algorithms, taken from the Internet (Wiki, StackOveflow etc.)
+- Presented as 6 different functions with translating algorithms, taken from the Internet (Wiki, StackOveflow etc.)
 
 These functions responsible for: 
-1. Allocating enough memory for new expression, before translation.
-2. Execution the translation algorithm.
+- Allocating enough memory for new expression, before translation.
+- Execution the translation algorithm.
 
 
 ## Going backwards:
 
-After Step[2] `Terminal()` function will print to the console translated expressions and their notation type.
+- After Step[2] `Terminal()` function will print to the console translated expressions and their notation type.
 
-After Step[1] (after `Terminal()` execution) two smart pointers will be left pointing to the 'c-strings' with translation or they will be null pointers if input was incorrect.
+- After Step[1] (after `Terminal()` execution) two smart pointers will be left pointing to the 'c-strings' with translation or they will be null pointers if input was incorrect.
 
 
-### Additional features
+### Additional features:
 
 - 'Console' version is covered by Unit Tests (Native).
 
