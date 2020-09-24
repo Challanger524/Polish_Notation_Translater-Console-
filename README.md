@@ -16,7 +16,7 @@ Console(1) interface provides basic i/o operations without any special options. 
 - Console – trough a while loop inside main() function.
 - WinAPI – through edit box and message processing function(case VK_RETURN) of the Main window.
 
-With regex expression input is checked for presense of odd symbols.
+With regex expression input is checked for presence of odd symbols.
 
 ### Step[1]  - Processing the Input:
 - Implemented through calling `Terminal(input,...)` function wrapper which determining the notation type
